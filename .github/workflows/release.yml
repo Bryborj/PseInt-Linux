@@ -27,7 +27,7 @@ jobs:
     name: Build RPM Package (Fedora)
     runs-on: ubuntu-latest
     container:
-      image: fedora:40
+      image: fedora:44
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
