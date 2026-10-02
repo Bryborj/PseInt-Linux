@@ -4,12 +4,14 @@ set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$DIR"
 
+VERSION=$(cat bin/version)
+
 echo "=== 1. Preparando tarball de fuentes ==="
 ./pack.sh src
 
 echo "=== 2. Configurando entorno rpmbuild ==="
 mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-cp dist/pseint-src-20250314.tgz ~/rpmbuild/SOURCES/
+cp "dist/pseint-src-${VERSION}.tgz" ~/rpmbuild/SOURCES/
 cp dist/pseint.desktop ~/rpmbuild/SOURCES/
 cp dist/pseint.spec ~/rpmbuild/SPECS/
 

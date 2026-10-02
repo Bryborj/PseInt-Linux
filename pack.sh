@@ -31,13 +31,20 @@ function clean {
 
 function pack_src {
 	clean
-	cd ..
-	FNAME=dist/pseint-src-`cat pseint/bin/version`.tgz
-	tar -czf pseint/$FNAME pseint/license.txt pseint/pack.sh pseint/configs pseint/Makefile* pseint/pseint pseint/wxPSeInt pseint/psterm pseint/pseval pseint/psexport pseint/psdrawE pseint/psdraw3 pseint/bin pseint/dist/license.txt pseint/dist/log.sh pseint/dist/pseint.nsh pseint/dist/pseint-packer.sh pseint/dist/get_arch pseint/dist/Info.plist pseint/test pseint/hoewrap pseint/dtl/C* pseint/dtl/R* pseint/dtl/dtl pseint/docs
+	VERSION=$(cat bin/version)
+	mkdir -p dist
+	FNAME="dist/pseint-src-${VERSION}.tgz"
+	tar --transform 's,^,pseint/,' \
+		--exclude='dist/*.tgz' \
+		--exclude='dist/*.zip' \
+		--exclude='dist/*.rpm' \
+		--exclude='dist/*.deb' \
+		--exclude='dist/*.AppImage' \
+		-czf "$FNAME" \
+		license.txt pack.sh configs Makefile pseint wxPSeInt psterm pseval psexport psdrawE psdraw3 bin dist test hoewrap dtl docs
 	echo 
 	echo -n "DONE: "
-	cd pseint
-	ls -sh $FNAME
+	ls -sh "$FNAME"
 	echo
 }
 
