@@ -1,0 +1,23 @@
+# Build outputs
+temp/
+bin/bin/*
+!bin/bin/.gitkeep
+bin/pseint
+bin/wxPSeInt
+bin/psterm
+bin/psdraw3
+bin/psdrawE
+bin/psexport
+bin/pseval
+
+# Dist packages
+dist/pseint-*.tgz
+dist/pseint-*.zip
+dist/pseint/
+
+# Graphify
+graphify-out/
+
+# Object files
+*.o
+*.a

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=PSeInt
+GenericName=Pseudocode Editor and Interpreter
+GenericName[es]=Editor e Intérprete de Pseudocódigo
+Comment=Learn programming logic with Spanish pseudocode
+Comment[es]=Aprenda lógica de programación con pseudocódigo en español
+Exec=wxpseint %F
+Icon=pseint
+Terminal=false
+Type=Application
+Categories=Development;IDE;Education;
+MimeType=text/pseint-psc;text/x-pseint;
+StartupNotify=true
+StartupWMClass=wxPSeInt
