@@ -14,6 +14,10 @@ bin/pseval
 dist/pseint-*.tgz
 dist/pseint-*.zip
 dist/pseint/
+dist/*.rpm
+dist/*.deb
+dist/*.AppImage
+appimagetool
 
 # Graphify
 graphify-out/
