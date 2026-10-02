@@ -27,6 +27,10 @@ fi
 echo "=== 4. Compilando paquete RPM binario ==="
 rpmbuild -ba ~/rpmbuild/SPECS/pseint.spec
 
+mkdir -p dist
+cp ~/rpmbuild/RPMS/*/*.rpm dist/ || true
+cp ~/rpmbuild/SRPMS/*.src.rpm dist/ || true
+
 echo ""
 echo "=== ¡Compilación exitosa! ==="
-ls -lh ~/rpmbuild/RPMS/*/*.rpm
+ls -lh dist/*.rpm

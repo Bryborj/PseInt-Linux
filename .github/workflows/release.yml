@@ -1,0 +1,164 @@
+name: Build & Release Linux Packages
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Crear GitHub Release público'
+        required: false
+        type: boolean
+        default: true
+      release_tag:
+        description: 'Tag de release (opcional, por defecto versión del código)'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-rpm:
+    name: Build RPM Package (Fedora)
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:40
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          dnf install -y \
+            gcc-c++ \
+            make \
+            wxGTK-devel \
+            mesa-libGL-devel \
+            mesa-libGLU-devel \
+            libX11-devel \
+            desktop-file-utils \
+            rpm-build \
+            git \
+            file \
+            tar
+
+      - name: Build RPM & SRPM packages
+        run: |
+          ./dist/build-rpm.sh
+
+      - name: Upload RPM Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm-packages
+          path: dist/*.rpm
+          if-no-files-found: error
+
+  build-deb:
+    name: Build DEB Package (Ubuntu / Debian)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libwxgtk3.2-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libx11-dev \
+            desktop-file-utils
+
+      - name: Build DEB package
+        run: |
+          ./dist/build-deb.sh
+
+      - name: Upload DEB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-packages
+          path: dist/*.deb
+          if-no-files-found: error
+
+  build-appimage:
+    name: Build AppImage Bundle
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libwxgtk3.2-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libx11-dev \
+            desktop-file-utils \
+            libfuse2 \
+            file \
+            curl
+
+      - name: Build AppImage package
+        run: |
+          ./dist/build-appimage.sh
+
+      - name: Upload AppImage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-package
+          path: dist/*.AppImage
+          if-no-files-found: error
+
+  create-release:
+    name: Publish Public GitHub Release
+    needs: [build-rpm, build-deb, build-appimage]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.create_release == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all built packages
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Determine Release Tag and Title
+        id: release_meta
+        run: |
+          VERSION=$(cat bin/version)
+          if [ -n "${{ github.event.inputs.release_tag }}" ]; then
+            TAG="${{ github.event.inputs.release_tag }}"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            TAG="${{ github.ref_name }}"
+          else
+            TAG="v${VERSION}"
+          fi
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "title=PSeInt ${TAG} for Linux (.deb, .rpm, .AppImage)" >> $GITHUB_OUTPUT
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_meta.outputs.tag }}
+          name: ${{ steps.release_meta.outputs.title }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release-assets/*.deb
+            release-assets/*.rpm
+            release-assets/*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
